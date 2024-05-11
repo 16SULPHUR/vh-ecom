@@ -82,6 +82,8 @@ const createOrderRequest = async (pId,cPh,pp)=>{
 
   console.log(respJSON.msg.payment_session_id
   )
+
+  return respJSON.msg.payment_session_id
 }
 
 module.exports = { getUser, addToCartRequest, getCart, getProducts, removeFromCart, createOrderRequest};
