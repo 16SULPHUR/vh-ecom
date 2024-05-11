@@ -75,7 +75,8 @@ const createOrderRequest = async (pId,cPh,pp)=>{
 
 
 
-  const resp = await fetch(`http://127.0.0.1:3005/payment/createOrder?cPh=${localStorage.getItem("c")}&pId=${pId}`)
+  // const resp = await fetch(`http://127.0.0.1:3005/payment/createOrder?cPh=${localStorage.getItem("c")}&pId=${pId}`)
+  const resp = await fetch(`https://vh-apis.onrender.com/payment/createOrder?cPh=${localStorage.getItem("c")}&pId=${pId}`)
 
   const respJSON = await resp.json()
 
