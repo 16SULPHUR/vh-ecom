@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { createOrderRequest } from "./getUser";
 import { load } from "@cashfreepayments/cashfree-js";
+import OrderDetails from "./OrderDetails";
 
 const BuyNow = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const id = searchParams.get("id");
+  if(id){
+    localStorage.setItem("idToBuy", id)
+  }
   const [sessionId, setSessionId] = useState("");
 
   useEffect(() => {
@@ -15,7 +19,7 @@ const BuyNow = () => {
       setSessionId(orderSession);
     };
 
-    func();
+    // func();
   }, []);
 
   let cashfree;
@@ -60,7 +64,7 @@ const BuyNow = () => {
 
   return (
     <div class="row">
-      <p>Click below to open the checkout page in popup</p>
+      {/* <p>Click below to open the checkout page in popup</p>
       {sessionId}
       <button
         type="submit"
@@ -69,7 +73,10 @@ const BuyNow = () => {
         onClick={doPayment}
       >
         Pay Now
-      </button>
+      </button> */}
+
+
+      <OrderDetails id={id}/>
     </div>
   );
 };

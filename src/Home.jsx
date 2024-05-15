@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, memo } from "react";
 // import SignupModal from "./Signupmodal";
 import { addToCartRequest } from "./getUser";
+import { Link } from "react-router-dom";
 
 const ProductCard = memo(
   ({ title, salePrice, originalPrice, thumbnailSrc, id }) => {
@@ -68,12 +69,13 @@ const ProductCard = memo(
           </div>
         </a>
         <div className="flex justify-end w-full gap-2 h-fit">
-          <button
-            className="bg-black text-white py-2 px-3 text-xl   rounded-lg font-semibold me-3 mb-3"
-            onClick={() => addToCart(id)}
-          >
-            +🛒
-          </button>
+          <Link to={`/buy?id=${id}`}>
+            <button
+              className="bg-black text-white py-2 px-3 text-md  rounded-lg font-semibold me-3 mb-3"
+            >
+              Buy Now
+            </button>
+          </Link>
         </div>
       </div>
     );

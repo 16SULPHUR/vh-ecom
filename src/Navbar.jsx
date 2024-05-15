@@ -6,6 +6,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 
 const navigation = [
   { name: "Home", href: "/", current: true },
+  { name: "My Orders", href: "/orders" },
 ];
 
 export default function Navbar({ isLoggedIn }) {

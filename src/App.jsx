@@ -11,6 +11,7 @@ import Navbar from "./Navbar";
 import Home from "./Home";
 import ProductPage from "./ProductPage";
 import BuyNow from "./BuyNow";
+import Orders from "./Orders";
 
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="cancelationpolicy" element={<RefundPolicy />} />
           <Route path="shippingpolicy" element={<ShippingPolicy />} />
           <Route path="buy" element={<BuyNow />} />
+          <Route path="orders" element={<Orders />} />
           {/* <Route path="payment" element={<Payment />} /> */}
         </Route>
       </Routes>

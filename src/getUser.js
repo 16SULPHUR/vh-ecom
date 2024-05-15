@@ -86,4 +86,40 @@ const createOrderRequest = async (pId,cPh,pp)=>{
   return respJSON.msg.payment_session_id
 }
 
-module.exports = { getUser, addToCartRequest, getCart, getProducts, removeFromCart, createOrderRequest};
+const verifyAccessToken = async (at)=>{
+  try {
+    const url = "https://eapi.phone.email/getuser";
+    const data = new FormData();
+
+    data.append("access_token", at);
+    data.append("client_id", "14168416091898906021");
+
+    const response = await fetch(url, { method: "POST", body: data });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const responseData = await response.json();
+
+    if (responseData.status !== 200) {
+      console.error(responseData);
+    }
+
+    const phEmailJwt = responseData.ph_email_jwt;
+
+    const userDetails = {
+      countryCode: responseData.country_code,
+      phoneNo: responseData.phone_no,
+      phEmailJwt: phEmailJwt,
+    };
+
+    localStorage.setItem("phone", userDetails.phoneNo);
+    return userDetails.phoneNo
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+
+}
+
+module.exports = { getUser, addToCartRequest, getCart, getProducts, removeFromCart, createOrderRequest, verifyAccessToken};
