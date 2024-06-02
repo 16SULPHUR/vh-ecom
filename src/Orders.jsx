@@ -173,6 +173,7 @@ const Orders = () => {
   }
   const [phone, setPhone] = useState(localStorage.getItem("phone"));
   const [loading, setLoading] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
 
   const [at, setAt] = useState(localStorage.getItem("accessToken"));
 
@@ -194,22 +195,37 @@ const Orders = () => {
   //     // }
   //   }, []);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const resp = await fetch(
-          `http://127.0.0.1:3005/orders/trackOrders?cid=${phone}`
-        );
-        const data = await resp.json();
-        setOrders(data.orders);
-        setLoading(false);
-      } catch (e) {
-        console.error(e);
-      }
-    };
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`https://vh-apis.onrender.com/orders/trackOrders?cid=${phone}`);
+      const data = await resp.json();
+      console.log(data.orders);
+      setOrders(data.orders);
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  };
 
-    if (phone) {
+  useEffect(() => {
+    // const fetchOrders = async () => {
+    //   setLoading(true);
+    //   try {
+    //     const resp = await fetch(
+    //       // `https://vh-apis.onrender.com/orders/trackOrders?cid=${phone}`
+    //       `http://127.0.0.1:3005/orders/trackOrders?cid=${phone}`
+    //     );
+    //     const data = await resp.json();
+    //     console.log(data.orders);
+    //     setOrders(data.orders);
+    //     setLoading(false);
+    //   } catch (e) {
+    //     console.error(e);
+    //   }
+    // };
+
+    if (phone != "undefined" && phone) {
       fetchOrders();
     }
   }, [phone]);
@@ -257,7 +273,8 @@ const Orders = () => {
 
   const verifyPhone = async () => {
     const CLIENT_ID = "14168416091898906021";
-    const redirectURL = "http://127.0.0.1:3000/orders";
+    const redirectURL = "https://varietyheaven.in/orders";
+    // const redirectURL = "http://127.0.0.1:3000/orders";
     // const redirectURL = "https://varietyheaven.in/buy";
     const AUTH_URL = `https://auth.phone.email/log-in?client_id=${CLIENT_ID}&redirect_url=${redirectURL}`;
 
@@ -271,8 +288,25 @@ const Orders = () => {
     );
   };
 
+  const generateInvoice = async (oid, cid) => {
+    setLoading(true);
+    try {
+      // const result = await fetch(`http://127.0.0.1:3005/generateInvoice?oid=${oid}&cid=${cid}`);
+      const result = await fetch(`https://vh-apis.onrender.com/generateInvoice?oid=${oid}&cid=${cid}`);
+      const data = await result.json();
+      console.log(data.orders);
+      if (data) {
+        fetchOrders();
+      }
+    } catch (error) {
+      console.error("Error generating invoice:", error);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <h1 className="text-center mb-5 font-semibold text-gray-600 text-lg">📦 Customer can track the order with the tracking number to the respective courier company.</h1>
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
         <div className="bg-blue-500 text-white px-6 py-4">
           <h2 className="text-xl font-semibold">Search Orders</h2>
@@ -350,12 +384,12 @@ const Orders = () => {
                       </th>
                       <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
                         <p className="font-semibold text-sm text-blue-gray-900">
-                          Status
+                          Address
                         </p>
                       </th>
                       <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
                         <p className="font-semibold text-sm text-blue-gray-900">
-                          Shipment Details
+                          Status and Shipment Details
                         </p>
                       </th>
                       <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
@@ -380,7 +414,7 @@ const Orders = () => {
                               <Link
                                 to={`/productpage?id=${order.productDetails._id}`}
                               >
-                                <p className="text-sm font-bold text-blue-700 hover:underline w-40 line-clamp-1">
+                                <p className="text-sm font-bold text-blue-700 hover:underline w-40 line-clamp-2">
                                   {order.productDetails.title}
                                 </p>
                               </Link>
@@ -404,44 +438,85 @@ const Orders = () => {
                           </div>
                         </td>
                         <td className="p-4 border-b border-blue-gray-100">
-                          <div className="w-max">
-                            <div className="rounded-md bg-green-500 text-white py-1 px-2 text-xs uppercase font-semibold">
-                              {order.orderStatus}
+                          <div className="w-40">
+                            <div className="font-semibold">
+                              {order.address || "No Address Specified"}
                             </div>
                           </div>
                         </td>
-                        <td className="p-4 border-b border-blue-gray-100">
-                          <div className="flex flex-col gap-4">
-                            <p className="text-sm text-blue-gray-900">
-                              Courier:{" "}
-                              <span className="font-semibold text-gray-800">
-                                {order.shipmentDetails.shippingProvider}
-                              </span>
-                            </p>
-                            <p className="text-sm text-blue-gray-900 w-32">
-                              Tracking Id:{" "}
-                              <span className="font-semibold text-gray-800">
-                                {order.shipmentDetails.trackingId}
-                              </span>
-                            </p>
-                            <p className="text-sm text-blue-gray-900 ">
-                              <Link
-                                to={order.shipmentDetails.trackingLink}
-                                target="_blank"
-                                className="bg-orange-600 py-2 px-3 rounded-md font-bold text-white"
-                              >
-                                Track Your Order Here
-                              </Link>
-                            </p>
+                        <td className="p-4 border-b border-blue-gray-100 w-56">
+                          <div className="w-max flex gap-3">
+                            <span>Status: </span>
+                            <div className="rounded-md bg-green-500 text-white py-1 px-2 text-xs uppercase font-semibold">
+                              <span>{order.orderStatus}</span>
+                            </div>
                           </div>
+                          {order.shipmentDetails.trackingId ? (
+                            <div className="flex flex-col gap-4">
+                              <div className="text-sm text-blue-gray-900 flex gap-2">
+                                <span>Courier: </span>
+                                <span className="font-semibold text-gray-800">
+                                  {order.shipmentDetails.shippingProvider ||
+                                    "Available when order is shipped"}
+                                </span>
+                              </div>
+                              <div className="text-sm text-blue-gray-900 flex gap-2">
+                                <span>Tracking Id: </span>
+                                <span className="font-semibold text-gray-800">
+                                  {order.shipmentDetails.trackingId ||
+                                    "Available when order is shipped"}
+                                </span>
+                              </div>
+                              <p className="text-sm text-blue-gray-900 ">
+                                <Link
+                                  to={order.shipmentDetails.trackingLink}
+                                  target="_blank"
+                                  className="bg-orange-600 py-2 px-3 rounded-md font-bold text-white"
+                                >
+                                  Track Your Order Here
+                                </Link>
+                              </p>
+                            </div>
+                          ) : (
+                            <div>
+                              Shipment Details are Available when order is
+                              shipped
+                            </div>
+                          )}
                         </td>
                         <td className="p-4 border-b border-blue-gray-100">
                           <div className="flex items-center gap-3">
-                            <Link to={order.invoice || ""} download={true} target="_blank">
-                              <div className="rounded-md bg-blue-500 text-white py-1 px-2 text-xs uppercase font-semibold">
-                                Download Invoice
-                              </div>
-                            </Link>
+                            {
+                              order.invoice ? (
+                                <Link
+                                  to={`/invoice?src=${order.invoice}` || ""}
+                                  target="_blank"
+                                >
+                                  <div className="rounded-md bg-blue-500 text-white py-1 px-2 text-xs uppercase font-semibold">
+                                    Download Invoice
+                                  </div>
+                                </Link>
+                              ) : (
+                                <div>
+                                  {order.orderStatus != "payment received" ? (
+                                    <div>Payment not received</div>
+                                  ) : (
+                                    <div>
+                                      <button
+                                        onClick={() =>
+                                          generateInvoice(
+                                            order._id,
+                                            order.phone
+                                          )
+                                        }
+                                      >
+                                        Generate Invoice
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            }
                           </div>
                         </td>
                         {/* <td className="p-4 border-b border-blue-gray-100">

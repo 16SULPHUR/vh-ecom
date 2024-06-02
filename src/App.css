@@ -1,3 +1,13 @@
 ::-webkit-scrollbar {
     display: none;
   }
+
+  .whatsapp-ico{
+    fill: white;
+    width: 42px;
+    height: 42px;
+    padding: 3px;
+    background-color: #4dc247;
+    border-radius: 50%;
+    /* box-shadow: 2px 2px 6px rgba(0,0,0,0.4); */
+}

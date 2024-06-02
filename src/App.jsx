@@ -12,6 +12,10 @@ import Home from "./Home";
 import ProductPage from "./ProductPage";
 import BuyNow from "./BuyNow";
 import Orders from "./Orders";
+import Invoice from "./Invoice";
+import Policies from "./Policies";
+import Footer from "./Footer";
+import Faq from "./Faq";
 
 
 function App() {
@@ -45,11 +49,16 @@ function App() {
           <Route path="privecypolicy" element={<PrivecyPolicy />} />
           <Route path="cancelationpolicy" element={<RefundPolicy />} />
           <Route path="shippingpolicy" element={<ShippingPolicy />} />
-          <Route path="buy" element={<BuyNow />} />
+          <Route path="buy/:id/:varient" element={<BuyNow />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="invoice" element={<Invoice />} />
+          <Route path="policies" element={<Policies />} />
+          <Route path="contact" element={<ContactUs />} />
+          <Route path="faqs" element={<Faq />} />
           {/* <Route path="payment" element={<Payment />} /> */}
         </Route>
       </Routes>
+      <Footer/>
     </>
   );
 }

@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { load } from "@cashfreepayments/cashfree-js";
+import { useParams } from "react-router-dom";
 
-const OrderDetails = ({ id }) => {
+const OrderDetails = () => {
   const [product, setProduct] = useState({});
+  const [selectedVariation, setSelectedVariation] = useState({});
+  const [thumbnail, setThumbnail] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [streetAddress, setStreetAddress] = useState("");
-  const [aptSuite, setAptSuite] = useState("");
-  const [floor, setFloor] = useState("");
-  const [building, setBuilding] = useState("");
-  const [landmark, setLandmark] = useState("");
+  const [houseNumberAndStreetAddress, setHouseNumberAndStreetAddress] =
+    useState("");
+  const [area, setArea] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
-  const [zip, setZip] = useState("");
+  const [pin, setPin] = useState("");
+  const [customerGSTIN, setCustomerGSTIN] = useState("");
   const [at, setAt] = useState(localStorage.getItem("accessToken"));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { id } = useParams();
+  console.log(id);
+  const { varient } = useParams();
+  console.log(typeof parseInt(varient));
 
   let cashfree;
   var initializeSDK = async function () {
@@ -33,68 +39,68 @@ const OrderDetails = ({ id }) => {
         redirectTarget: "_modal",
       };
 
-      
       cashfree.checkout(checkoutOptions).then((result) => {
-        console.log("doing payment"+ sid)
+        console.log("doing payment" + sid);
         if (result.error) {
           // This will be true whenever user clicks on close icon inside the modal or any error happens during the payment
           console.log(
             "User has closed the popup or there is some payment error, Check for Payment Status"
           );
           console.log(result.error);
+          setIsSubmitting(false);
         }
         if (result.redirect) {
           // This will be true when the payment redirection page couldnt be opened in the same window
           // This is an exceptional case only when the page is opened inside an inAppBrowser
           // In this case the customer will be redirected to return url once payment is completed
           console.log("Payment will be redirected");
+          setIsSubmitting(false);
         }
         if (result.paymentDetails) {
           // This will be called whenever the payment is completed irrespective of transaction status
           console.log("Payment has been completed, Check for Payment Status");
           console.log(result.paymentDetails);
+          setIsSubmitting(false);
 
+          // const data = {
+          //  details: details
+          // };
 
-          const data = {
-           details: details
-          };
-      
-          // const url = "http://127.0.0.1:3005/payment/registerOrder";
-          const url = "https://vh-apis.onrender.com/payment/registerOrder";
-      
-          const options = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json", // Specify the content type as JSON
-            },
-            body: JSON.stringify(data), // Convert the data to JSON string
-          };
-      
-          fetch(url, options)
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error("Network response was not ok");
-              }
-              return response.json(); // Parse the JSON response
-            })
-            .then((data) => {
-              console.log(data.msg);
-              // Handle the response data
-            })
-            .catch((error) => {
-              console.error("Error creating order:", error);
-              // Handle errors
-            });
+          // // const url = "http://127.0.0.1:3005/payment/registerOrder";
+          // const url = "https://vh-apis.onrender.com/payment/registerOrder";
 
+          // const options = {
+          //   method: "POST",
+          //   headers: {
+          //     "Content-Type": "application/json", // Specify the content type as JSON
+          //   },
+          //   body: JSON.stringify(data), // Convert the data to JSON string
+          // };
 
+          // fetch(url, options)
+          //   .then((response) => {
+          //     if (!response.ok) {
+          //       throw new Error("Network response was not ok");
+          //     }
+          //     return response.json(); // Parse the JSON response
+          //   })
+          //   .then((data) => {
+          //     console.log(data.msg);
+          // window.location.href = "https://varietyheaven.in/orders"
+          //     // Handle the response data
+          //   })
+          //   .catch((error) => {
+          //     console.error("Error creating order:", error);
+          //     // Handle errors
+          //   });
 
+          window.location.href = "https://varietyheaven.in/orders";
         }
       });
     } else {
       console.log("session id not available");
     }
   };
-
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -162,11 +168,16 @@ const OrderDetails = ({ id }) => {
     const fetchProduct = async () => {
       try {
         const response = await fetch(
-          `https://vh-apis.onrender.com/getProduct?id=${localStorage.getItem(
-            "idToBuy"
-          )}`
+          `https://vh-apis.onrender.com/getProduct?id=${id}`
+          // `http://127.0.0.1:3005/getProduct?id=${id}`
         );
         const data = await response.json();
+        console.log(data.product[0].variations[varient]);
+        // console.log(localStorage.getItem(
+        //     "idToBuy"
+        //   ))
+        setThumbnail(data.product[0].variations[varient].images[0]);
+        setSelectedVariation(data.product[0].variations[varient]);
         setProduct(data.product[0]);
       } catch (err) {
         console.error(err);
@@ -174,7 +185,7 @@ const OrderDetails = ({ id }) => {
     };
 
     fetchProduct();
-  }, [id, at]);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -186,14 +197,12 @@ const OrderDetails = ({ id }) => {
       phone,
       email,
       fullName,
-      streetAddress,
-      aptSuite,
-      floor,
-      building,
-      landmark,
+      houseNumberAndStreetAddress,
+      area,
       city,
       state,
-      zip,
+      pin,
+      customerGSTIN,
     });
 
     if (!phone) {
@@ -206,19 +215,18 @@ const OrderDetails = ({ id }) => {
       phone: phone,
       email: email,
       fullName: fullName,
-      streetAddress: streetAddress,
-      aptSuite: aptSuite,
-      floor: floor,
-      building: building,
-      landmark: landmark,
+      houseNumberAndStreetAddress: houseNumberAndStreetAddress,
+      area: area,
       city: city,
       state: state,
-      zip: zip,
-      pId: localStorage.getItem("idToBuy")
+      pin: pin,
+      pId: id,
+      varient: varient,
+      customerGSTIN: customerGSTIN,
     };
 
-    // const url = "http://127.0.0.1:3005/payment/createOrder";
     const url = "https://vh-apis.onrender.com/payment/createOrder";
+    // const url = "https://vh-apis.onrender.com/payment/createOrder";
 
     const options = {
       method: "POST",
@@ -236,9 +244,9 @@ const OrderDetails = ({ id }) => {
         return response.json(); // Parse the JSON response
       })
       .then((data) => {
-        localStorage.setItem("sessionId", data.msg.payment_session_id)
+        localStorage.setItem("sessionId", data.msg.payment_session_id);
         console.log(data.msg.payment_session_id);
-        doPayment(data.msg.payment_session_id, data.msg)
+        doPayment(data.msg.payment_session_id, data.msg);
         // Handle the response data
       })
       .catch((error) => {
@@ -250,28 +258,20 @@ const OrderDetails = ({ id }) => {
     setPhone("");
     setEmail("");
     setFullName("");
-    setStreetAddress("");
-    setAptSuite("");
-    setFloor("");
-    setBuilding("");
-    setLandmark("");
+    setHouseNumberAndStreetAddress("");
+    setArea("");
     setCity("");
     setState("");
-    setZip("");
-
-    
-
-
+    setPin("");
+    setCustomerGSTIN("");
 
     // setIsSubmitting(false);
   };
 
-  
-
   const verifyPhone = async () => {
     const CLIENT_ID = "14168416091898906021";
-    // const redirectURL = "http://127.0.0.1:3000/buy";
-    const redirectURL = "https://varietyheaven.in/buy";
+    // const redirectURL = `http://127.0.0.1:3000/buy/${id}/${varient}`;
+    const redirectURL = `https://varietyheaven.in/buy/${id}/${varient}`;
     const AUTH_URL = `https://auth.phone.email/log-in?client_id=${CLIENT_ID}&redirect_url=${redirectURL}`;
 
     window.open(
@@ -284,6 +284,9 @@ const OrderDetails = ({ id }) => {
     );
   };
 
+  if (product) {
+    // console.log(product.variations[parseInt(varient)])
+  }
   return (
     <div>
       {/* Loading overlay */}
@@ -347,25 +350,6 @@ const OrderDetails = ({ id }) => {
                   )}
                 </div>
 
-                {/* Email input */}
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="text-xs font-semibold text-gray-500"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="john.capler@fang.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
                 {/* Full Name input */}
                 <div>
                   <label
@@ -385,21 +369,61 @@ const OrderDetails = ({ id }) => {
                   />
                 </div>
 
+                <div>
+                  <label
+                    htmlFor="customerGSTIN"
+                    className="text-xs font-semibold text-gray-500"
+                  >
+                    GSTIN (If Available)
+                  </label>
+                  <input
+                    type="text"
+                    id="customerGSTIN"
+                    name="customerGSTIN"
+                    value={customerGSTIN}
+                    onChange={(e) => setCustomerGSTIN(e.target.value)}
+                    className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Email input */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="text-xs font-semibold text-gray-500"
+                  >
+                    Email
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="john.capler@fang.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
                 {/* Address inputs */}
                 <div className="pt-10">
                   <label className="text-lg font-semibold text-gray-800">
                     Address
                   </label>
 
-                  <div className="grid grid-cols-2 gap-4 mt-10">
-                    <div className="form-group">
+                  <div className="grid grid-cols-2 gap-4 mt-5">
+                    <div className="form-group col-span-2">
                       <label
                         htmlFor="streetAddress"
                         className="text-xs font-semibold text-gray-500"
                       >
-                        Street Address:
+                        House No. and Street Address:
                       </label>
                       <input
+                        onChange={(e) =>
+                          setHouseNumberAndStreetAddress(e.target.value)
+                        }
                         type="text"
                         id="streetAddress"
                         name="streetAddress"
@@ -407,59 +431,20 @@ const OrderDetails = ({ id }) => {
                         className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
+
                     <div className="form-group">
                       <label
-                        htmlFor="aptSuite"
+                        htmlFor="area"
                         className="text-xs font-semibold text-gray-500"
                       >
-                        Apartment/Suite:
+                        Area / Locality:
                       </label>
                       <input
+                        required
+                        onChange={(e) => setArea(e.target.value)}
                         type="text"
-                        id="aptSuite"
-                        name="aptSuite"
-                        className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label
-                        htmlFor="floor"
-                        className="text-xs font-semibold text-gray-500"
-                      >
-                        Floor:
-                      </label>
-                      <input
-                        type="text"
-                        id="floor"
-                        name="floor"
-                        className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label
-                        htmlFor="building"
-                        className="text-xs font-semibold text-gray-500"
-                      >
-                        Building:
-                      </label>
-                      <input
-                        type="text"
-                        id="building"
-                        name="building"
-                        className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label
-                        htmlFor="landmark"
-                        className="text-xs font-semibold text-gray-500"
-                      >
-                        Landmark:
-                      </label>
-                      <input
-                        type="text"
-                        id="landmark"
-                        name="landmark"
+                        id="area"
+                        name="area"
                         className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
@@ -471,6 +456,7 @@ const OrderDetails = ({ id }) => {
                         City:
                       </label>
                       <input
+                        onChange={(e) => setCity(e.target.value)}
                         type="text"
                         id="city"
                         name="city"
@@ -486,6 +472,7 @@ const OrderDetails = ({ id }) => {
                         State:
                       </label>
                       <input
+                        onChange={(e) => setState(e.target.value)}
                         type="text"
                         id="state"
                         name="state"
@@ -495,15 +482,16 @@ const OrderDetails = ({ id }) => {
                     </div>
                     <div className="form-group">
                       <label
-                        htmlFor="zip"
+                        htmlFor="pin"
                         className="text-xs font-semibold text-gray-500"
                       >
-                        ZIP Code:
+                        PIN Code:
                       </label>
                       <input
+                        onChange={(e) => setPin(e.target.value)}
                         type="text"
-                        id="zip"
-                        name="zip"
+                        id="pin"
+                        name="pin"
                         required
                         className="mt-1 block w-full rounded border-gray-300 bg-gray-50 py-3 px-4 text-sm placeholder-gray-300 shadow-sm outline-none transition focus:ring-2 focus:ring-blue-500"
                       />
@@ -533,23 +521,18 @@ const OrderDetails = ({ id }) => {
                     Terms and Conditions
                   </a>
                 </p>
-                <div>
+                <div className="text-center">
                   <button
                     type="submit"
-                    class="mt-4 inline-flex w-full items-center justify-center rounded bg-black py-2.5 px-4 text-base font-semibold tracking-wide text-white text-opacity-80 outline-none ring-offset-2 transition hover:text-opacity-100 focus:ring-2 focus:ring-blue-500 sm:text-lg"
+                    class="mt-4 w-fit lg:w-full rounded-3xl px-6 bg-green-700 py-2.5 font-semibold text-white text-3xl"
                   >
                     <div className="flex justify-center content-center">
-                      <img
-                        src="/cashfreeLogo.svg"
-                        alt=""
-                        className="h-10 self-center"
-                      />
                       <div className="flex flex-col">
                         <span className="text-2xl">Pay Now</span>
-                        <span className="flex gap-2 text-xs">
+                        {/* <span className="flex gap-2 text-xs">
                           Powered By Cashfree
                           <img src="/cashfreeLogo.svg" alt="" />
-                        </span>
+                        </span> */}
                       </div>
                     </div>
                   </button>
@@ -558,7 +541,7 @@ const OrderDetails = ({ id }) => {
             </div>
           </div>
           {/* Add order summary section here */}
-          <div class="relative col-span-full flex flex-col py-6 pl-8 pr-4 sm:py-12 lg:col-span-4 lg:py-24">
+          <div class="relative h-full col-span-full flex flex-col py-6 pl-8 pr-4 sm:py-12 lg:col-span-4 lg:py-24">
             <h2 class="sr-only">Order summary</h2>
             <div>
               <img
@@ -573,10 +556,11 @@ const OrderDetails = ({ id }) => {
                 Order summary
               </h1>
               <div className="flex gap-6 text-white">
-                <img src={product.thumbnail} alt="" className="h-36" />
+                <img src={thumbnail} alt="" className="h-36" />
                 <div className="flex flex-col gap-">
                   <h2 className="text-lg font-medium text-white mb-4">
-                    {product.title}
+                    <span>{product.title} </span>
+                    <span>({selectedVariation.color})</span>
                   </h2>
                   <div className="flex gap-2 items-baseline">
                     <p className="mt-1 text-3xl font-medium">
@@ -598,11 +582,9 @@ const OrderDetails = ({ id }) => {
             </div>
             <div class="relative mt-10 text-white">
               <h3 class="mb-5 text-lg font-bold">Support</h3>
-              <p class="text-sm font-semibold">
-                +01 651 <span class="font-light">(International)</span>
-              </p>
+              <p class="text-sm font-semibold">+91 8160185875</p>
               <p class="mt-1 text-sm font-semibold">
-                support@naom <span class="font-light">(Email)</span>
+                ankit@varietyheaven.in <span class="font-light">(Email)</span>
               </p>
               <p class="mt-2 text-xs font-medium">
                 Call us now for payment related issues
